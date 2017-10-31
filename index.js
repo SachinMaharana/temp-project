@@ -2,17 +2,39 @@ const express = require("express");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
+const keys = require("./config/keys");
+
 const app = express();
-passport.use(new GoogleStrategy());
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: keys.googleClientId,
+      clientSecret: keys.googleSecretId,
+      callbackURL: "/auth/google/callback"
+    },
+    (accessToken, refreshToken, profile, done) => {
+      console.log("accc", accessToken);
+      console.log("refresh", refreshToken);
+      console.log("profile", profile);
+    }
+  )
+);
 
 app.get("/", (req, res) => {
   res.send({ hi: "Sachin!" });
 });
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"]
+  })
+);
+
+app.get("/auth/google/callback", passport.authenticate("google"));
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log("Good to go!");
 });
-
-// https://ghoulish-phantom-60830.herokuapp.com/ | https://git.heroku.com/ghoulish-phantom-60830.git
